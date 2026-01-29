@@ -29,7 +29,6 @@ if "messages" not in st.session_state:
         }
     ]
 
-# Spremeniš max sporočil
 def omeji_zgodovino():
     while len(st.session_state.messages) > MAX_MESSAGES:
         st.session_state.messages.pop(1)
@@ -45,26 +44,13 @@ for msg in st.session_state.messages[1:]:
     else:
         st.markdown(f"**Grip:** {msg['content']}")
 
-# Callback funkcija za čiščenje vnosa
-def pocisti_vnos():
-    st.session_state.user_input = ""
-
 # ---- VNOS UPORABNIKA ----
-if "user_input" not in st.session_state:
-    st.session_state.user_input = ""
-
-user_input = st.text_input(
-    "Vaše vprašanje:",
-    value="",
-    key="user_input",
-    on_change=pocisti_vnos
-)
+vnos_placeholder = st.empty()  # ustvarimo placeholder za text_input
+user_input = vnos_placeholder.text_input("Vaše vprašanje:")
 
 if st.button("Pošlji") and user_input:
     # Dodaj uporabniško sporočilo
-    st.session_state.messages.append(
-        {"role": "user", "content": user_input}
-    )
+    st.session_state.messages.append({"role": "user", "content": user_input})
     omeji_zgodovino()
 
     try:
@@ -76,13 +62,11 @@ if st.button("Pošlji") and user_input:
 
         ai_text = odgovor.choices[0].message.content
 
-        st.session_state.messages.append(
-            {"role": "assistant", "content": ai_text}
-        )
+        st.session_state.messages.append({"role": "assistant", "content": ai_text})
         omeji_zgodovino()
 
-        # ---- POČIŠČENO VNOSNO POLJE ----
-        st.session_state.user_input = ""
+        # Pošlji novo vprašanje – počisti vnosno polje
+        vnos_placeholder.text_input("Vaše vprašanje:", value="")  # prepiše prejšnje vprašanje s praznim
 
     except Exception as e:
         st.error(f"Napaka: {e}")
