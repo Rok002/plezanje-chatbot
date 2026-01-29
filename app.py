@@ -42,11 +42,14 @@ for msg in st.session_state.messages[1:]:
     if msg["role"] == "user":
         st.markdown(f"**Vi:** {msg['content']}")
     else:
-        st.markdown(f"**Grip:** {msg['content']}")
+        st.markdown(f"**AI:** {msg['content']}")
 
 # ---- VNOS UPORABNIKA ----
-vnos_placeholder = st.empty()  # ustvarimo placeholder za text_input
-user_input = vnos_placeholder.text_input("Vaše vprašanje:")
+user_input = st.text_input(
+    "Vaše vprašanje:",
+    value="",              # vedno prazno na začetku
+    key="user_input"       # unikatni key
+)
 
 if st.button("Pošlji") and user_input:
     # Dodaj uporabniško sporočilo
@@ -66,7 +69,7 @@ if st.button("Pošlji") and user_input:
         omeji_zgodovino()
 
         # Pošlji novo vprašanje – počisti vnosno polje
-        vnos_placeholder.text_input("Vaše vprašanje:", value="")  # prepiše prejšnje vprašanje s praznim
+        st.session_state.user_input = ""  # zdaj varno, ker imamo unikatni key
 
     except Exception as e:
         st.error(f"Napaka: {e}")
