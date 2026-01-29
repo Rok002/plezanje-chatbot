@@ -45,14 +45,19 @@ for msg in st.session_state.messages[1:]:
     else:
         st.markdown(f"**Grip:** {msg['content']}")
 
+# Callback funkcija za čiščenje vnosa
+def pocisti_vnos():
+    st.session_state.user_input = ""
+
 # ---- VNOS UPORABNIKA ----
 if "user_input" not in st.session_state:
     st.session_state.user_input = ""
 
 user_input = st.text_input(
     "Vaše vprašanje:",
-    value=st.session_state.user_input,
-    key="user_input"
+    value="",
+    key="user_input",
+    on_change=pocisti_vnos
 )
 
 if st.button("Pošlji") and user_input:
