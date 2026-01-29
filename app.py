@@ -29,6 +29,7 @@ if "messages" not in st.session_state:
         }
     ]
 
+# Spremeniš max sporočil
 def omeji_zgodovino():
     while len(st.session_state.messages) > MAX_MESSAGES:
         st.session_state.messages.pop(1)
@@ -45,7 +46,14 @@ for msg in st.session_state.messages[1:]:
         st.markdown(f"**Grip:** {msg['content']}")
 
 # ---- VNOS UPORABNIKA ----
-user_input = st.text_input("Vaše vprašanje:")
+if "user_input" not in st.session_state:
+    st.session_state.user_input = ""
+
+user_input = st.text_input(
+    "Vaše vprašanje:",
+    value=st.session_state.user_input,
+    key="user_input"
+)
 
 if st.button("Pošlji") and user_input:
     # Dodaj uporabniško sporočilo
@@ -68,8 +76,8 @@ if st.button("Pošlji") and user_input:
         )
         omeji_zgodovino()
 
-        # NI več st.experimental_rerun()
-        # Streamlit sam osveži komponento in prikaže novo sporočilo
+        # ---- POČIŠČENO VNOSNO POLJE ----
+        st.session_state.user_input = ""
 
     except Exception as e:
         st.error(f"Napaka: {e}")
