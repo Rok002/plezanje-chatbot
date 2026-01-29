@@ -1,0 +1,68 @@
+import streamlit as st
+import os
+from groq import Groq
+
+# ---- KONFIGURACIJA ----
+st.set_page_config(page_title="Informatika Chatbot", page_icon="💻")
+
+# API ključ iz Streamlit Secrets
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+
+MAX_MESSAGES = 10
+
+# ---- SESSION STATE (SPOMIN) ----
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {
+            "role": "system",
+            "content": (
+                "Si prijazen chatbot, strokovnjak za plezanje. "
+                "Odgovarjaš izključno v slovenščini. "
+                "Če vprašanje ni povezano s plezanjem ali športom, "
+                "vljudno povej, da za to področje nimaš informacij."
+            )
+        }
+    ]
+
+def omeji_zgodovino():
+    while len(st.session_state.messages) > MAX_MESSAGES:
+        st.session_state.messages.pop(1)
+
+# ---- NASLOV ----
+st.title("💻 Informatika Chatbot")
+st.write("Postavi vprašanje s področja informatike.")
+
+# ---- PRIKAZ ZGODOVINE ----
+for msg in st.session_state.messages[1:]:
+    if msg["role"] == "user":
+        st.markdown(f"**Vi:** {msg['content']}")
+    else:
+        st.markdown(f"**AI:** {msg['content']}")
+
+# ---- VNOS UPORABNIKA ----
+user_input = st.text_input("Vaše vprašanje:")
+
+if st.button("Pošlji") and user_input:
+    # Dodaj uporabniško sporočilo
+    st.session_state.messages.append(
+        {"role": "user", "content": user_input}
+    )
+    omeji_zgodovino()
+
+    try:
+        odgovor = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=st.session_state.messages
+        )
+
+        ai_text = odgovor.choices[0].message.content
+
+        st.session_state.messages.append(
+            {"role": "assistant", "content": ai_text}
+        )
+        omeji_zgodovino()
+
+        st.experimental_rerun()
+
+    except Exception as e:
+        st.error(f"Napaka: {e}")
