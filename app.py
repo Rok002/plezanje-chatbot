@@ -1,26 +1,31 @@
 import streamlit as st
 from groq import Groq
 
-# ---- KONFIGURACIJA ----
-st.set_page_config(page_title="Plezalni Chatbot", page_icon="🧗")
+# ---- KONFIGURACIJA STRANI ----
+st.set_page_config(
+    page_title="Plezalni Chatbot",
+    page_icon="🧗",
+    layout="centered"
+)
 
-# API ključ iz Streamlit Secrets
+# ---- NASLOV ----
+st.title("🧗 Plezalni Chatbot")
+st.write("Postavi vprašanje o plezanju, opremi, tehnikah, treningu ali izposoji opreme.")
+
+# ---- Groq client ----
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-MAX_MESSAGES = 10
-
-# ---- SESSION STATE (SPOMIN) ----
+# ---- INICIALIZACIJA SPOMINA (SESSION STATE) ----
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {
             "role": "system",
             "content": (
-                "Si prijazen chatbot, strokovnjak za plezanje. "
+                "Si prijazen slovenski asistent, strokovnjak za plezanje. "
                 "Odgovarjaš izključno v slovenščini. "
-                "Če vprašanje ni povezano s plezanjem ali športom, "
+                "Če vprašanje ni povezano s plezanjem ali vsebino spletne strani, "
                 "vljudno povej, da za to področje nimaš informacij. "
                 "Ponujaj nasvete za plezalno opremo, tehnike, varnost, trening in tutoriale. "
-                "Poleg tega svetuj uporabnikom glede izposoje opreme. "
                 "Na spletni strani imaš naslednje vsebine: "
                 "1. Plezalno središče: plezalci si lahko delijo nasvete, smeri in zgodbe, povezovanje z drugimi. "
                 "2. Najnovejše plezalne teme: video tutoriali, deljenje slik in videov. "
@@ -29,47 +34,37 @@ if "messages" not in st.session_state:
         }
     ]
 
-def omeji_zgodovino():
-    while len(st.session_state.messages) > MAX_MESSAGES:
-        st.session_state.messages.pop(1)
-
-# ---- NASLOV ----
-st.title("🧗 Plezalni Chatbot")
-st.write("Postavi vprašanje o plezanju, opremi, tehnikah, treningu ali izposoji opreme.")
-
-# ---- PRIKAZ ZGODOVINE ----
+# ---- PRIKAZ ZGODOVINE POGOVORA ----
 for msg in st.session_state.messages[1:]:
-    if msg["role"] == "user":
-        st.markdown(f"**Vi:** {msg['content']}")
-    else:
-        st.markdown(f"**AI:** {msg['content']}")
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
 # ---- VNOS UPORABNIKA ----
-user_input = st.text_input(
-    "Vaše vprašanje:",
-    value="",              # vedno prazno na začetku
-    key="user_input"       # unikatni key
-)
+user_input = st.chat_input("Vprašaj nekaj o plezanju...")
 
-if st.button("Pošlji") and user_input:
-    # Dodaj uporabniško sporočilo
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    omeji_zgodovino()
+if user_input:
+    # Prikaži uporabnikov vnos
+    with st.chat_message("user"):
+        st.markdown(user_input)
 
-    try:
-        # Pošlji v Groq model
-        odgovor = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=st.session_state.messages
-        )
+    # Dodaj uporabnikov vnos v zgodovino
+    st.session_state.messages.append(
+        {"role": "user", "content": user_input}
+    )
 
-        ai_text = odgovor.choices[0].message.content
+    # ---- KLIC GROQ API ----
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=st.session_state.messages
+    )
 
-        st.session_state.messages.append({"role": "assistant", "content": ai_text})
-        omeji_zgodovino()
+    ai_reply = response.choices[0].message.content
 
-        # Pošlji novo vprašanje – počisti vnosno polje
-        st.session_state.user_input = ""  # zdaj varno, ker imamo unikatni key
+    # Prikaži odgovor
+    with st.chat_message("Grip"):
+        st.markdown(ai_reply)
 
-    except Exception as e:
-        st.error(f"Napaka: {e}")
+    # Dodaj odgovor v zgodovino
+    st.session_state.messages.append(
+        {"role": "Grip", "content": ai_reply}
+    )
