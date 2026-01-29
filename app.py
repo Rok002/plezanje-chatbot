@@ -64,8 +64,8 @@ if st.button("Pošlji") and user_input:
         )
         omeji_zgodovino()
 
-        # Ponovni prikaz, da se pokaže novo sporočilo
-        st.experimental_rerun()
+        # NI več st.experimental_rerun()
+        # Streamlit sam osveži komponento in prikaže novo sporočilo
 
     except Exception as e:
         st.error(f"Napaka: {e}")
