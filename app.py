@@ -1,9 +1,8 @@
 import streamlit as st
-import os
 from groq import Groq
 
 # ---- KONFIGURACIJA ----
-st.set_page_config(page_title="Informatika Chatbot", page_icon="💻")
+st.set_page_config(page_title="Plezalni Chatbot", page_icon="🧗")
 
 # API ključ iz Streamlit Secrets
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -19,7 +18,9 @@ if "messages" not in st.session_state:
                 "Si prijazen chatbot, strokovnjak za plezanje. "
                 "Odgovarjaš izključno v slovenščini. "
                 "Če vprašanje ni povezano s plezanjem ali športom, "
-                "vljudno povej, da za to področje nimaš informacij."
+                "vljudno povej, da za to področje nimaš informacij. "
+                "Ponujaj nasvete za plezalno opremo, tehnike, varnost, trening in tutoriale. "
+                "Poleg tega svetuj uporabnikom glede izposoje opreme."
             )
         }
     ]
@@ -29,8 +30,8 @@ def omeji_zgodovino():
         st.session_state.messages.pop(1)
 
 # ---- NASLOV ----
-st.title("💻 Informatika Chatbot")
-st.write("Postavi vprašanje s področja informatike.")
+st.title("🧗 Plezalni Chatbot")
+st.write("Postavi vprašanje o plezanju, opremi, tehnikah, treningu ali izposoji opreme.")
 
 # ---- PRIKAZ ZGODOVINE ----
 for msg in st.session_state.messages[1:]:
@@ -50,6 +51,7 @@ if st.button("Pošlji") and user_input:
     omeji_zgodovino()
 
     try:
+        # Pošlji v Groq model
         odgovor = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=st.session_state.messages
@@ -62,6 +64,7 @@ if st.button("Pošlji") and user_input:
         )
         omeji_zgodovino()
 
+        # Ponovni prikaz, da se pokaže novo sporočilo
         st.experimental_rerun()
 
     except Exception as e:
