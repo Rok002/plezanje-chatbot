@@ -20,7 +20,11 @@ if "messages" not in st.session_state:
                 "Če vprašanje ni povezano s plezanjem ali športom, "
                 "vljudno povej, da za to področje nimaš informacij. "
                 "Ponujaj nasvete za plezalno opremo, tehnike, varnost, trening in tutoriale. "
-                "Poleg tega svetuj uporabnikom glede izposoje opreme."
+                "Poleg tega svetuj uporabnikom glede izposoje opreme. "
+                "Na spletni strani imaš naslednje vsebine: "
+                "1. Plezalno središče: plezalci si lahko delijo nasvete, smeri in zgodbe, povezovanje z drugimi. "
+                "2. Najnovejše plezalne teme: video tutoriali, deljenje slik in videov. "
+                "3. Izposoja opreme: možnost izposoje vse plezalne opreme, ki jo potrebuješ."
             )
         }
     ]
@@ -38,7 +42,7 @@ for msg in st.session_state.messages[1:]:
     if msg["role"] == "user":
         st.markdown(f"**Vi:** {msg['content']}")
     else:
-        st.markdown(f"**AI:** {msg['content']}")
+        st.markdown(f"**Grip:** {msg['content']}")
 
 # ---- VNOS UPORABNIKA ----
 user_input = st.text_input("Vaše vprašanje:")
