@@ -15,6 +15,16 @@ st.write("Postavi vprašanje o plezanju, opremi, tehnikah, treningu ali izposoji
 # ---- Groq client ----
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
+MAX_MESSAGES = 10  # lahko zmanjšaš na 5, če še vedno prihaja do napak
+
+def omeji_zgodovino():
+    """
+    Odstrani najstarejša sporočila, da zgodovina ne postane prevelika.
+    Ohranimo vedno SYSTEM sporočilo in zadnjih MAX_MESSAGES uporabniških + AI sporočil.
+    """
+    while len(st.session_state.messages) > MAX_MESSAGES + 1:  # +1 za system
+        st.session_state.messages.pop(1)
+
 # ---- INICIALIZACIJA SPOMINA (SESSION STATE) ----
 if "messages" not in st.session_state:
     st.session_state.messages = [
