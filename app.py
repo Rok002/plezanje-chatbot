@@ -1,55 +1,41 @@
 import streamlit as st
 from groq import Groq
 
-# ---- KONFIGURACIJA STRANI ----
+# Konfiguracija strani
 st.set_page_config(
     page_title="Plezalni Chatbot",
     page_icon="🧗",
     layout="centered"
 )
 
-# ---- NASLOV ----
-st.title("🧗 Plezalni Chatbot")
-st.write("Postavi vprašanje o plezanju, opremi, tehnikah, treningu ali izposoji opreme.")
+# Naslov
+st.title("🧗 Chatbot: Plezanje")
+st.write("Vprašaj me karkoli o plezanju.")
 
-# ---- Groq client ----
+# Groq client
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-MAX_MESSAGES = 10  # lahko zmanjšaš na 5, če še vedno prihaja do napak
-
-def omeji_zgodovino():
-    """
-    Odstrani najstarejša sporočila, da zgodovina ne postane prevelika.
-    Ohranimo vedno SYSTEM sporočilo in zadnjih MAX_MESSAGES uporabniških + AI sporočil.
-    """
-    while len(st.session_state.messages) > MAX_MESSAGES + 1:  # +1 za system
-        st.session_state.messages.pop(1)
-
-# ---- INICIALIZACIJA SPOMINA (SESSION STATE) ----
+# Inicializacija spomina (samo za sejo)
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {
             "role": "system",
             "content": (
-                "Si prijazen slovenski asistent, strokovnjak za plezanje. "
-                "Odgovarjaš izključno v slovenščini. "
-                "Če vprašanje ni povezano s plezanjem ali vsebino spletne strani, "
-                "vljudno povej, da za to področje nimaš informacij. "
-                "Ponujaj nasvete za plezalno opremo, tehnike, varnost, trening in tutoriale. "
-                "Na spletni strani imaš naslednje vsebine: "
-                "1. Plezalno središče: plezalci si lahko delijo nasvete, smeri in zgodbe, povezovanje z drugimi. "
-                "2. Najnovejše plezalne teme: video tutoriali, deljenje slik in videov. "
-                "3. Izposoja opreme: možnost izposoje vse plezalne opreme, ki jo potrebuješ."
+                "Si prijazen slovenski asistent za plezanje. "
+                "Pomagaš z informacijami o plezalnih tehnikah, treningu, "
+                "varnosti in izposoji plezalne opreme. "
+                "Če vprašanje ni povezano s plezanjem, "
+                "vljudno poveš, da za to področje nimaš informacij."
             )
         }
     ]
 
-# ---- PRIKAZ ZGODOVINE POGOVORA ----
+# Prikaz zgodovine pogovora
 for msg in st.session_state.messages[1:]:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# ---- VNOS UPORABNIKA ----
+# Vnos uporabnika
 user_input = st.chat_input("Vprašaj nekaj o plezanju...")
 
 if user_input:
@@ -57,12 +43,11 @@ if user_input:
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    # Dodaj uporabnikov vnos v zgodovino
     st.session_state.messages.append(
         {"role": "user", "content": user_input}
     )
 
-    # ---- KLIC GROQ API ----
+    # Klic Groq API-ja
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=st.session_state.messages
@@ -71,10 +56,9 @@ if user_input:
     ai_reply = response.choices[0].message.content
 
     # Prikaži odgovor
-    with st.chat_message("Grip"):
+    with st.chat_message("assistant"):
         st.markdown(ai_reply)
 
-    # Dodaj odgovor v zgodovino
     st.session_state.messages.append(
-        {"role": "Grip", "content": ai_reply}
+        {"role": "assistant", "content": ai_reply}
     )
